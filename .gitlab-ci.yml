@@ -1,5 +1,5 @@
 # This file is a template, and might need editing before it works on your project.
-image: golang:1.15
+image: golang:1.15-alpine
 
 variables:
   # Please edit to your GitLab project
@@ -37,6 +37,12 @@ tests:
   stage: test
   script:
     - go test -short $(go list ./... | grep -v /vendor/)
+
+memory-sanitize:
+  stage: test
+  script:
+    - apk add build-base
+    - go test -msan -short $(go list ./... | grep -v /vendor/)
 
 race-conditions:
   stage: test

@@ -1,4 +1,4 @@
-package pdf_objects
+package pdfobjects
 
 import (
 	"fmt"
