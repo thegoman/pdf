@@ -44,8 +44,8 @@ memory-sanitize:
     - apk add --no-cache bash dpkg git
     - apk add --no-cache autoconf automake make
     - apk add apk add --no-cache clang clang-dev gcc lld musl-dev
-    - ln -sf /usr/bin/clang /usr/bin/cc
-    - ln -sf /usr/bin/clang++ /usr/bin/c++
+    - set_clang /etc/profile.d/set-clang-cc.sh
+    - echo "export CC=clang-5.0" | tee -a ${set_clang} && chmod a+x ${set_clang}
     - go test -msan -short $(go list ./... | grep -v /vendor/)
 
 race-conditions:
