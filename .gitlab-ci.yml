@@ -38,12 +38,6 @@ tests:
   script:
     - go test -short $(go list ./... | grep -v /vendor/)
 
-memory-sanitize:
-  stage: test
-  script:
-    - apk add build-base
-    - go test -msan -short $(go list ./... | grep -v /vendor/)
-
 race-conditions:
   stage: test
   script:
