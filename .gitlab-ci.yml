@@ -41,7 +41,6 @@ tests:
 memory-sanitize:
   stage: test
   script:
-    - apk add build-base
     - go test -msan -short $(go list ./... | grep -v /vendor/)
 
 race-conditions:
