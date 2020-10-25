@@ -34,3 +34,8 @@ race-conditions:
   stage: test
   script:
     - go test -race $(go list ./... | grep -v /vendor/)
+
+lint:
+  stage: test
+  script:
+    - golint $(go list ./... | grep -v /vendor/)
