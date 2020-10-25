@@ -41,6 +41,11 @@ tests:
 memory-sanitize:
   stage: test
   script:
+    - apk add --no-cache bash dpkg git
+    - apk add --no-cache autoconf automake make
+    - apk add apk add --no-cache clang clang-dev gcc lld musl-dev
+    - ln -sf /usr/bin/clang /usr/bin/cc
+    - ln -sf /usr/bin/clang++ /usr/bin/c++
     - go test -msan -short $(go list ./... | grep -v /vendor/)
 
 race-conditions:
