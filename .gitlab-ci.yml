@@ -38,10 +38,10 @@ tests:
   script:
     - go test -short $(go list ./... | grep -v /vendor/)
 
-memory-sanitize:
+code-coverage:
   stage: test
   script:
-    - go test -msan -short $(go list ./... | grep -v /vendor/)
+    go test -cover -short $(go list ./... | grep -v /vendor/)
 
 race-conditions:
   stage: test
