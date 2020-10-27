@@ -1,46 +1,61 @@
-image: registry.gitlab.com/thegoman/pdf
-variables:
-  # Please edit to your GitLab project
-  REPO_NAME: gitlab.com/thegoman/pdf
+stages:
+  - build
+  - format
+  - lint
+  - test
+  - .post
 
-# The problem is that to be able to use go get, one needs to put
-# the repository in the $GOPATH. So for example if your gitlab domain
-# is gitlab.com, and that your repository is namespace/project, and
-# the default GOPATH being /go, then you'd need to have your
-# repository in /go/src/gitlab.com/namespace/project
-# Thus, making a symbolic link corrects this.
+variables:
+  REPO_NAME: gitlab.com/thegoman/pdf
+  BUILD_IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA-$CI_PIPELINE_ID
+
 before_script:
   - mkdir -p $GOPATH/src/$(dirname $REPO_NAME)
   - ln -svf $CI_PROJECT_DIR $GOPATH/src/$REPO_NAME
   - cd $GOPATH/src/$REPO_NAME
 
-stages:
-  - format
-  - lint
-  - test
+build:
+  stage: build
+  script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - docker build --rm -t "$BUILD_IMAGE_TAG" .
+    - docker push "$BUILD_IMAGE_TAG"
+
 
 format:
   stage: format
+  image: $BUILD_IMAGE_TAG
   script:
     - go fmt $(go list ./... | grep -v /vendor/)
     - go vet $(go list ./... | grep -v /vendor/)
 
 lint:
   stage: lint
+  image: $BUILD_IMAGE_TAG
   script:
     - golint -set_exit_status $(go list ./... | grep -v /vendor/)
 
 tests:
   stage: test
+  image: $BUILD_IMAGE_TAG
   script:
     - go test -short $(go list ./... | grep -v /vendor/)
 
 code-coverage:
   stage: test
+  image: $BUILD_IMAGE_TAG
   script:
     go test -cover -short $(go list ./... | grep -v /vendor/)
 
 race-conditions:
   stage: test
+  image: $BUILD_IMAGE_TAG
   script:
     - go test -race -short $(go list ./... | grep -v /vendor/)
+
+cleanup:
+  stage: .post
+  script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - docker rmi "$BUILD_IMAGE_TAG"
+  when: always
