@@ -3,7 +3,6 @@ stages:
   - format
   - lint
   - test
-  - .post
 
 variables:
   REPO_NAME: gitlab.com/thegoman/pdf
@@ -56,11 +55,3 @@ race-conditions:
   image: $BUILD_IMAGE_TAG
   script:
     - go test -race -short $(go list ./... | grep -v /vendor/)
-
-cleanup:
-  stage: .post
-  image: docker:latest
-  script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
-    - docker rmi "$BUILD_IMAGE_TAG"
-  when: always
