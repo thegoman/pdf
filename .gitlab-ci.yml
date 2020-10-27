@@ -15,8 +15,8 @@ before_script:
   - cd $GOPATH/src/$REPO_NAME
 
 build:
-  image: docker:latest
   stage: build
+  image: docker:latest
   services:
     - docker:dind
   before_script:
@@ -59,6 +59,7 @@ race-conditions:
 
 cleanup:
   stage: .post
+  image: docker:latest
   script:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
     - docker rmi "$BUILD_IMAGE_TAG"
