@@ -1,39 +1,66 @@
-image: registry.gitlab.com/thegoman/pdf
+stages:
+  - build
+  - format
+  - lint
+  - test
+  - .post
+
 variables:
   REPO_NAME: gitlab.com/thegoman/pdf
+  BUILD_IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA-$CI_PIPELINE_ID
 
 before_script:
   - mkdir -p $GOPATH/src/$(dirname $REPO_NAME)
   - ln -svf $CI_PROJECT_DIR $GOPATH/src/$REPO_NAME
   - cd $GOPATH/src/$REPO_NAME
 
-stages:
-  - format
-  - lint
-  - test
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+  script:    
+    - docker build --rm -t "$BUILD_IMAGE_TAG" .
+    - docker push "$BUILD_IMAGE_TAG"
+
 
 format:
   stage: format
+  image: $BUILD_IMAGE_TAG
   script:
     - go fmt $(go list ./... | grep -v /vendor/)
     - go vet $(go list ./... | grep -v /vendor/)
 
 lint:
   stage: lint
+  image: $BUILD_IMAGE_TAG
   script:
     - golint -set_exit_status $(go list ./... | grep -v /vendor/)
 
 tests:
   stage: test
+  image: $BUILD_IMAGE_TAG
   script:
     - go test -short $(go list ./... | grep -v /vendor/)
 
 code-coverage:
   stage: test
+  image: $BUILD_IMAGE_TAG
   script:
     go test -cover -short $(go list ./... | grep -v /vendor/)
 
 race-conditions:
   stage: test
+  image: $BUILD_IMAGE_TAG
   script:
     - go test -race -short $(go list ./... | grep -v /vendor/)
+
+cleanup:
+  stage: .post
+  image: docker:latest
+  script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - docker rmi "$BUILD_IMAGE_TAG"
+  when: always
