@@ -5,12 +5,20 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+// UnitType for UnitType constants
 type UnitType int
 
 const (
+	//Point unit type
 	Point UnitType = iota
+
+	//Pica unit type
 	Pica
+
+	//Inch unit type
 	Inch
+
+	//Millimeter unit type
 	Millimeter
 )
 
