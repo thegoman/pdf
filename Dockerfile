@@ -5,3 +5,4 @@ WORKDIR /go/src/gitlab.com/thegoman/pdf
 
 COPY . .
 RUN go get -u golang.org/x/lint/golint
+RUN go mod download
